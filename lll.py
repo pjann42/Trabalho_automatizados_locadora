@@ -28,6 +28,15 @@ class Filme(Item):
         self.diretor = diretor
         self.duracao = duracao
 
+    def detalhes(self):
+        disponibilidade = "disponível" if self.quantidade_disponivel > 0 else "não disponível"
+        print(f"Filme: {self.titulo} (ID: {self.id})")
+        print(f"Diretor: {self.diretor}")
+        print(f"Duração: {self.duracao} minutos")
+        print(f"Preço de Aluguel: R${self.preco_aluguel:.2f}")
+        print(f"Quantidade disponível: {self.quantidade_disponivel}")
+        print(f"Disponibilidade: {disponibilidade}")
+
 class Cliente:
     def __init__(self, nome):
         self.nome = nome
@@ -38,6 +47,29 @@ class Cliente:
             filme.emprestar()
             data_emprestimo = datetime.now()
             self.filmes_emprestados[filme] = (data_emprestimo, tempo_devolucao)
+            print(f"Filme '{filme.titulo}' emprestado a {self.nome} em {data_emprestimo}. Prazo de devolução: {tempo_devolucao} dias.")
+        else:
+            print(f"Filme '{filme.titulo}' não está disponível para empréstimo.")
+
+    def devolver_filme(self, filme, tempo_demorado):
+        if filme in self.filmes_emprestados:
+            filme.devolver()
+            data_emprestimo, tempo_devolucao = self.filmes_emprestados.pop(filme)
+            print(f"Filme '{filme.titulo}' devolvido por {self.nome}. Tempo que demorou para devolver: {tempo_demorado} dias.")
+            if tempo_demorado > tempo_devolucao:
+                print(f"{self.nome} está devendo por não devolver '{filme.titulo}' no prazo.")
+            else:
+                print(f"Filme '{filme.titulo}' devolvido dentro do prazo.")
+        else:
+            print(f"{self.nome} não tem o filme '{filme.titulo}' emprestado.")
+
+    def listar_filmes_emprestados(self):
+        if not self.filmes_emprestados:
+            print(f"{self.nome} não tem filmes emprestados.")
+        else:
+            for filme, (data_emprestimo, _) in self.filmes_emprestados.items():
+                tempo_com_filme = datetime.now() - data_emprestimo
+                print(f"Filme: {filme.titulo}, Emprestado em: {data_emprestimo}, Tempo com o filme: {tempo_com_filme.days} dias")
 
 class Locadora:
     def __init__(self):
@@ -46,22 +78,57 @@ class Locadora:
 
     def adicionar_filme(self, filme):
         self.catalogo.append(filme)
+        print(f"Filme '{filme.titulo}' adicionado ao catálogo.")
+
+    def listar_filmes(self):
+        if not self.catalogo:
+            print("Nenhum filme no catálogo.")
+        else:
+            for filme in self.catalogo:
+                filme.detalhes()
+
+    def buscar_filme_por_titulo(self, titulo):
+        for filme in self.catalogo:
+            if filme.titulo == titulo:
+                print(f'O filme {filme.titulo} está no catálogo')
+                return filme
+            
+        print(f"Filme '{titulo}' não encontrado no catálogo.")
+        return None
 
     def adicionar_cliente(self, cliente):
         self.clientes.append(cliente)
+        print(f"Cliente '{cliente.nome}' adicionado.")
+
+    def listar_clientes(self):
+        if not self.clientes:
+            print("Nenhum cliente cadastrado.")
+        else:
+            for cliente in self.clientes:
+                print(f"Cliente: {cliente.nome}, Filmes emprestados: {len(cliente.filmes_emprestados)}")
 
     def criar_dataframe_clientes(self):
         data = []
         for cliente in self.clientes:
-            for filme, (data_emprestimo, tempo_devolucao) in cliente.filmes_emprestados.items():
+            if cliente.filmes_emprestados:
+                for filme, (data_emprestimo, tempo_devolucao) in cliente.filmes_emprestados.items():
+                    data.append({
+                        'Cliente': cliente.nome,
+                        'Filme': filme.titulo,
+                        'Data de Empréstimo': data_emprestimo,
+                        'Prazo de Devolução (dias)': tempo_devolucao,
+                        'Preço de Aluguel': filme.preco_aluguel
+                    })
+            else:
                 data.append({
                     'Cliente': cliente.nome,
-                    'Filme': filme.titulo,
-                    'Data de Empréstimo': data_emprestimo,
-                    'Prazo de Devolução (dias)': tempo_devolucao,
-                    'Preço de Aluguel': filme.preco_aluguel
+                    'Filme': None,
+                    'Data de Empréstimo': None,
+                    'Prazo de Devolução (dias)': 7,
+                    'Preço de Aluguel': 0.0
                 })
-        return pd.DataFrame(data)
+        df = pd.DataFrame(data)
+        return df
 
     def criar_dataframe_filmes(self):
         data = []
@@ -72,7 +139,8 @@ class Locadora:
                 'Quantidade Disponível': filme.quantidade_disponivel,
                 'Preço de Aluguel': filme.preco_aluguel
             })
-        return pd.DataFrame(data)
+        df = pd.DataFrame(data)
+        return df
 
     def salvar_pdf_clientes(self):
         df_clientes = self.criar_dataframe_clientes()
@@ -96,6 +164,7 @@ class Locadora:
         plt.close()
         print("PDF com filmes disponíveis salvo como 'filmes_disponiveis.pdf'.")
 
+# Função para criar a interface gráfica de filmes disponíveis
 def mostrar_filmes_disponiveis():
     root = tk.Tk()
     root.title("Filmes Disponíveis")
@@ -119,29 +188,6 @@ def mostrar_filmes_disponiveis():
 
     root.mainloop()
 
-def mostrar_clientes():
-    root = tk.Tk()
-    root.title("Informações dos Clientes")
-
-    frame = ttk.Frame(root)
-    frame.pack(fill=tk.BOTH, expand=True)
-
-    df_clientes = locadora.criar_dataframe_clientes()
-    tree = ttk.Treeview(frame, columns=list(df_clientes.columns), show="headings")
-    tree.pack(fill=tk.BOTH, expand=True)
-
-    for col in df_clientes.columns:
-        tree.heading(col, text=col)
-        tree.column(col, anchor=tk.CENTER)
-
-    for index, row in df_clientes.iterrows():
-        tree.insert("", tk.END, values=list(row))
-
-    btn_salvar_pdf = ttk.Button(frame, text="Salvar como PDF", command=locadora.salvar_pdf_clientes)
-    btn_salvar_pdf.pack(pady=10)
-
-    root.mainloop()
-
 # Exemplo de uso
 locadora = Locadora()
 
@@ -149,6 +195,7 @@ locadora = Locadora()
 filme1 = Filme(1, "Matrix", "Wachowskis", 136, 5.00, 3)
 filme2 = Filme(2, "Inception", "Christopher Nolan", 148, 7.50, 2)
 filme3 = Filme(3, "Princesa da Ilha", "Tarantino", 120, 4.00, 5)
+
 locadora.adicionar_filme(filme1)
 locadora.adicionar_filme(filme2)
 locadora.adicionar_filme(filme3)
@@ -156,12 +203,14 @@ locadora.adicionar_filme(filme3)
 # Criando clientes
 cliente1 = Cliente("João")
 cliente2 = Cliente("Maria")
+
+# Adicionando clientes à locadora
 locadora.adicionar_cliente(cliente1)
 locadora.adicionar_cliente(cliente2)
 
-# Emprestando filmes
-cliente1.emprestar_filme(filme1, 7)
+# Listar filmes e clientes no console
+locadora.listar_filmes()
+locadora.listar_clientes()
 
-# Mostrar filmes disponíveis e clientes
-mostrar_filmes_disponiveis()
-mostrar_clientes()
+# Buscar filme por título
+locadora.buscar_filme

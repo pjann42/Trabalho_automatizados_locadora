@@ -240,6 +240,8 @@ locadora.adicionar_cliente(cliente2)
 
 locadora.buscar_filme_por_titulo('Matrix')
 
+locadora.listar_filmes()
+
 # Emprestando filmes aos clientes com o tempo de devolução
 cliente1.emprestar_filme(filme1, 7)  # 7 dias
 cliente2.emprestar_filme(filme2, 5)  # 5 dias
