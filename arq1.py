@@ -1,50 +1,50 @@
+
 import tkinter as tk
 from tkinter import ttk
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 
 class Item:
-    def __init__(self, id, titulo, preco_aluguel):
+    
+    def __init__(self, id, titulo, preco_aluguel, quantidade_disponivel):
         self.id = id
         self.titulo = titulo
         self.preco_aluguel = preco_aluguel
-        self.disponivel = True
+        self.quantidade_disponivel = quantidade_disponivel
 
     def emprestar(self):
-        if self.disponivel:
-            self.disponivel = False
+        if self.quantidade_disponivel > 0:
+            self.quantidade_disponivel -= 1
             print(f"O item '{self.titulo}' foi emprestado.")
         else:
             print(f"O item '{self.titulo}' não está disponível.")
 
     def devolver(self):
-        if not self.disponivel:
-            self.disponivel = True
-            print(f"O item '{self.titulo}' foi devolvido.")
-        else:
-            print(f"O item '{self.titulo}' já está disponível.")
+        self.quantidade_disponivel += 1
+        print(f"O item '{self.titulo}' foi devolvido.")
 
 class Filme(Item):
-    def __init__(self, id, titulo, diretor, duracao, preco_aluguel):
-        super().__init__(id, titulo, preco_aluguel)
+    def __init__(self, id, titulo, diretor, duracao, preco_aluguel, quantidade_disponivel):
+        super().__init__(id, titulo, preco_aluguel, quantidade_disponivel)
         self.diretor = diretor
         self.duracao = duracao
 
     def detalhes(self):
-        disponibilidade = "disponível" if self.disponivel else "não disponível"
+        disponibilidade = "disponível" if self.quantidade_disponivel > 0 else "não disponível"
         print(f"Filme: {self.titulo} (ID: {self.id})")
         print(f"Diretor: {self.diretor}")
         print(f"Duração: {self.duracao} minutos")
         print(f"Preço de Aluguel: R${self.preco_aluguel:.2f}")
+        print(f"Quantidade disponível: {self.quantidade_disponivel}")
         print(f"Disponibilidade: {disponibilidade}")
 
 class Cliente:
     def __init__(self, nome):
         self.nome = nome
-        self.filmes_emprestados = {}  # Dicionário para armazenar filmes e suas datas de empréstimo
+        self.filmes_emprestados = {}
 
     def emprestar_filme(self, filme, tempo_devolucao):
-        if filme.disponivel:
+        if filme.quantidade_disponivel > 0:
             filme.emprestar()
             data_emprestimo = datetime.now()
             self.filmes_emprestados[filme] = (data_emprestimo, tempo_devolucao)
@@ -73,6 +73,7 @@ class Cliente:
                 print(f"Filme: {filme.titulo}, Emprestado em: {data_emprestimo}, Tempo com o filme: {tempo_com_filme.days} dias")
 
 class Locadora:
+
     def __init__(self):
         self.catalogo = []
         self.clientes = []
@@ -130,8 +131,40 @@ class Locadora:
         df = pd.DataFrame(data)
         return df
 
-# Função para criar a interface gráfica
+    def criar_dataframe_filmes(self):
+        data = []
+        for filme in self.catalogo:
+            data.append({
+                'Filme': filme.titulo,
+                'Diretor': filme.diretor,
+                'Quantidade Disponível': filme.quantidade_disponivel,
+                'Preço de Aluguel': filme.preco_aluguel
+            })
+        df = pd.DataFrame(data)
+        return df
 
+# Função para criar a interface gráfica de filmes disponíveis
+def mostrar_filmes_disponiveis():
+    root = tk.Tk()
+    root.title("Filmes Disponíveis")
+
+    frame = ttk.Frame(root)
+    frame.pack(fill=tk.BOTH, expand=True)
+
+    df_filmes = locadora.criar_dataframe_filmes()
+    tree = ttk.Treeview(frame, columns=list(df_filmes.columns), show="headings")
+    tree.pack(fill=tk.BOTH, expand=True)
+
+    for col in df_filmes.columns:
+        tree.heading(col, text=col)
+        tree.column(col, anchor=tk.CENTER)
+
+    for index, row in df_filmes.iterrows():
+        tree.insert("", tk.END, values=list(row))
+
+    root.mainloop()
+
+# Função para criar a interface gráfica para as informações dos clientes
 def mostrar_dataframe(df):
     root = tk.Tk()
     root.title("Informações dos Clientes")
@@ -164,9 +197,9 @@ def mostrar_dataframe(df):
 locadora = Locadora()
 
 # Adicionando filmes ao catálogo
-filme1 = Filme(1, "Matrix", "Wachowskis", 136, 5.00)
-filme2 = Filme(2, "Inception", "Christopher Nolan", 148, 7.50)
-filme3 = Filme(3, "Princesa da Ilha", "Tarantino", 120, 4.00)
+filme1 = Filme(1, "Matrix", "Wachowskis", 136, 5.00, 3)
+filme2 = Filme(2, "Inception", "Christopher Nolan", 148, 7.50, 2)
+filme3 = Filme(3, "Princesa da Ilha", "Tarantino", 120, 4.00, 5)
 
 locadora.adicionar_filme(filme1)
 locadora.adicionar_filme(filme2)
@@ -191,5 +224,8 @@ cliente1.devolver_filme(filme3, 2)   # Devolveu em 2 dias
 df_clientes = locadora.criar_dataframe_clientes()
 print(df_clientes)
 
-# Mostrar DataFrame na interface gráfica
+# Mostrar DataFrame na interface gráfica dos clientes
 mostrar_dataframe(df_clientes)
+
+# Mostrar a nova interface gráfica com filmes disponíveis
+mostrar_filmes_disponiveis()
