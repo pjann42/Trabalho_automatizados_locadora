@@ -104,18 +104,18 @@ class Cliente: # Principais ações que o cliente pode realizar, conversando com
                 tempo_com_filme = datetime.now() - data_emprestimo
                 print(f"Filme: {filme.titulo}, Emprestado em: {data_emprestimo}, Tempo com o filme: {tempo_com_filme.days} dias") #informa o usuário
 
-class Locadora:
+class Locadora: # Classe destinada as ações dentro da locadora
 
     def __init__(self): 
 
         self.catalogo = []
         self.clientes = []
 
-    def adicionar_filme(self, filme):
+    def adicionar_filme(self, filme): # Adiciona filme à lista do catálogo
         self.catalogo.append(filme)
         print(f"Filme '{filme.titulo}' adicionado ao catálogo.")
     
-    def remover_filme(self, titulo):
+    def remover_filme(self, titulo): # Remove filme da lista do catálogo
         for filme in self.catalogo:
             if filme.titulo == titulo:
                 self.catalogo.remove(filme)
@@ -130,7 +130,7 @@ class Locadora:
             for filme in self.catalogo:
                 filme.detalhes()
 
-    def buscar_filme_por_titulo(self, titulo):
+    def buscar_filme_por_titulo(self, titulo): # Busca filme por título no catálogo
         for filme in self.catalogo:
             if filme.titulo == titulo:
                 print(f'O filme {filme.titulo} está no catálogo')
@@ -139,18 +139,18 @@ class Locadora:
         print(f"Filme '{titulo}' não encontrado no catálogo.")
         return None
 
-    def adicionar_cliente(self, cliente):
+    def adicionar_cliente(self, cliente): # Adiciona um cleinte a lista de clientes
         self.clientes.append(cliente)
         print(f"Cliente '{cliente.nome}' adicionado.")
 
-    def listar_clientes(self):
+    def listar_clientes(self): # Lista os clientes da lista clientes
         if not self.clientes:
             print("Nenhum cliente cadastrado.")
         else:
             for cliente in self.clientes:
                 print(f"Cliente: {cliente.nome}, Filmes emprestados: {len(cliente.filmes_emprestados)}")
 
-    def criar_dataframe_clientes(self):
+    def criar_dataframe_clientes(self): # Cria um dataframe dos clientes com informações importantes acerca do aluguel dos filmes
         data = []
         for cliente in self.clientes:
             if cliente.filmes_emprestados:
@@ -173,7 +173,7 @@ class Locadora:
         df = pd.DataFrame(data)
         return df
 
-    def criar_dataframe_filmes(self):
+    def criar_dataframe_filmes(self): # Cria um dataframe com as informações principais dos filmes do catálogo
         data = []
         for filme in self.catalogo:
             data.append({
@@ -185,7 +185,7 @@ class Locadora:
         df = pd.DataFrame(data)
         return df
 
-    def salvar_pdf_clientes(self):
+    def salvar_pdf_clientes(self): # Salva um pdf do dataframe com as informações do cliente 
         df_clientes = self.criar_dataframe_clientes()
         fig, ax = plt.subplots(figsize=(10, 5))
         ax.axis('tight')
@@ -196,7 +196,7 @@ class Locadora:
         plt.close()
         print("PDF com informações dos clientes salvo como 'informacoes_clientes.pdf'.")
 
-    def salvar_pdf_filmes(self):
+    def salvar_pdf_filmes(self): # Sala um pdf do dataframe com as informações dos filmes
         df_filmes = self.criar_dataframe_filmes()
         fig, ax = plt.subplots(figsize=(10, 5))
         ax.axis('tight')
@@ -207,9 +207,9 @@ class Locadora:
         plt.close()
         print("PDF com filmes disponíveis salvo como 'filmes_disponiveis.pdf'.")
 
-# Função para criar a interface gráfica de filmes disponíveis
+# Funções para criar a interface gráfica de filmes disponíveis
 
-def mostrar_filmes_disponiveis():
+def mostrar_filmes_disponiveis(): # Interface gráfica dos filmes disponíveis
     root = tk.Tk()
     root.title("Filmes Disponíveis")
 
@@ -232,9 +232,8 @@ def mostrar_filmes_disponiveis():
 
     root.mainloop()
 
-# Função para criar a interface gráfica para as informações dos clientes
 
-def mostrar_dataframe():
+def mostrar_informacoes_clientes():
 
     root = tk.Tk()
     root.title("Informações dos Clientes")
@@ -288,6 +287,7 @@ locadora.buscar_filme_por_titulo('Matrix')
 locadora.listar_filmes()
 
 # Emprestando filmes aos clientes com o tempo de devolução
+
 cliente1.emprestar_filme(filme1, 7)  # 7 dias
 cliente2.emprestar_filme(filme2, 5)  # 5 dias
 cliente1.emprestar_filme(filme3, 10) # 10 dias
@@ -299,4 +299,5 @@ cliente1.devolver_filme(filme3, 2)   # Devolveu em 2 dias
 mostrar_filmes_disponiveis()
 
 # Mostrar a interface gráfica para as informações dos clientes
-mostrar_dataframe()
+
+mostrar_informacoes_clientes()
