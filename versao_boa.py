@@ -65,7 +65,7 @@ class Filme(Item):
         print(f"Quantidade disponível: {self.quantidade_disponivel}") # Quantidade de filmes diponíveis
         print(f"Disponibilidade: {disponibilidade}") # informa o usuário se o filme está disponível
 
-class Cliente: # Principais ações que o cliente pode realizar, conversando com as outras classes
+class Cliente: # Principais ações que o cliente poder ealizar, conversando com as outras classes
 
     def __init__(self, nome):
 
@@ -100,9 +100,10 @@ class Cliente: # Principais ações que o cliente pode realizar, conversando com
         if not self.filmes_emprestados:
             print(f"{self.nome} não tem filmes emprestados.")
         else:
+            print(f"Filmes emprestados por {self.nome}:")
             for filme, (data_emprestimo, _) in self.filmes_emprestados.items():
                 tempo_com_filme = datetime.now() - data_emprestimo
-                print(f"Filme: {filme.titulo}, Emprestado em: {data_emprestimo}, Tempo com o filme: {tempo_com_filme.days} dias") #informa o usuário
+                print(f"• {filme.titulo}, Emprestado em: {data_emprestimo}") #informa o usuário
 
 class Locadora: # Classe destinada as ações dentro da locadora
 
@@ -112,23 +113,32 @@ class Locadora: # Classe destinada as ações dentro da locadora
         self.clientes = []
 
     def adicionar_filme(self, filme): # Adiciona filme à lista do catálogo
-        self.catalogo.append(filme)
-        print(f"Filme '{filme.titulo}' adicionado ao catálogo.")
+
+        if filme not in self.catalogo:
+            self.catalogo.append(filme)
+            print(f"Filme '{filme.titulo}' adicionado ao catálogo.")
+        else:
+            print(f"Filme '{filme.titulo}' já adicionado ao catálogo.")
     
     def remover_filme(self, titulo): # Remove filme da lista do catálogo
+
         for filme in self.catalogo:
             if filme.titulo == titulo:
                 self.catalogo.remove(filme)
+
                 print(f"Filme '{titulo}' removido do catálogo.")
                 return
         print(f"Filme '{titulo}' não encontrado no catálogo.")
 
     def listar_filmes(self): #Lista os filmes no catálogo
+
         if not self.catalogo:
             print("Nenhum filme no catálogo.")
         else:
+            print("Filmes no catálogo: ")
             for filme in self.catalogo:
-                filme.detalhes()
+                print("•",filme.titulo)
+                
 
     def buscar_filme_por_titulo(self, titulo): # Busca filme por título no catálogo
         for filme in self.catalogo:
@@ -162,14 +172,6 @@ class Locadora: # Classe destinada as ações dentro da locadora
                         'Prazo de Devolução (dias)': tempo_devolucao,
                         'Preço de Aluguel': filme.preco_aluguel
                     })
-            else:
-                data.append({
-                    'Cliente': cliente.nome,
-                    'Filme': None,
-                    'Data de Empréstimo': None,
-                    'Prazo de Devolução (dias)': 7,
-                    'Preço de Aluguel': 0.0
-                })
         df = pd.DataFrame(data)
         return df
 
@@ -261,43 +263,61 @@ def mostrar_informacoes_clientes():
 
 locadora = Locadora()
 
-# Adicionando filmes ao catálogo
-
+filme1 = Filme(1, "Matrix", "Wachowskis", 136, 20.00, 4)
 filme2 = Filme(2, "Inception", "Christopher Nolan", 148, 7.50, 2)
-filme3 = Filme(3, "Princesa da Ilha", "Tarantino", 120, 4.00, 5)
-filme1 = Filme(1, "Matrix", "Wachowskis", 136, 20.00, 3)
+filme3 = Filme(3, "Interstellar", "Christopher Nolan", 169, 9.00, 10)
+filme4 = Filme(4, "O Poderoso Chefão", "Francis Ford Coppola", 175, 12.00, 1)
+filme5 = Filme(5, "Pulp Fiction", "Quentin Tarantino", 154, 8.50, 4)
 
-locadora.remover_filme('Matrix')
+filme1.detalhes()
+
+cliente1 = Cliente("João Fogão")
+cliente2 = Cliente("Maria Glorioso")
+cliente3 = Cliente("Mané Garrincha")
+cliente4 = Cliente("Souzano X")
 
 locadora.adicionar_filme(filme1)
 locadora.adicionar_filme(filme2)
 locadora.adicionar_filme(filme3)
+locadora.adicionar_filme(filme4)
+locadora.adicionar_filme(filme5)
 
-locadora.remover_filme('Matrix')
-
-# Criando clientes
-cliente1 = Cliente("João")
-cliente2 = Cliente("Maria")
-
-# Adicionando clientes à locadora
 locadora.adicionar_cliente(cliente1)
 locadora.adicionar_cliente(cliente2)
-locadora.buscar_filme_por_titulo('Matrix')
+locadora.adicionar_cliente(cliente3)
+locadora.adicionar_cliente(cliente4)
+
+locadora.adicionar_filme(filme3)
 
 locadora.listar_filmes()
 
-# Emprestando filmes aos clientes com o tempo de devolução
+locadora.remover_filme('Pulp Fiction')
 
-cliente1.emprestar_filme(filme1, 7)  # 7 dias
-cliente2.emprestar_filme(filme2, 5)  # 5 dias
-cliente1.emprestar_filme(filme3, 10) # 10 dias
-cliente2.emprestar_filme(filme1, 3)  # 3 dias
-cliente1.devolver_filme(filme3, 2)   # Devolveu em 2 dias
+locadora.listar_filmes()
 
-# Mostrar a nova interface gráfica com filmes disponíveis
+locadora.buscar_filme_por_titulo('Matrix')
 
-mostrar_filmes_disponiveis()
+locadora.listar_clientes()
 
-# Mostrar a interface gráfica para as informações dos clientes
+cliente1.emprestar_filme(filme1, 7) 
+cliente1.emprestar_filme(filme2, 8)
+
+cliente2.emprestar_filme(filme2, 5)
+cliente2.emprestar_filme(filme4, 3) 
+
+cliente3.emprestar_filme(filme1, 10)
+cliente3.emprestar_filme(filme4, 4)
+
+cliente4.emprestar_filme(filme1, 15)
+cliente4.emprestar_filme(filme2, 2)
+cliente4.emprestar_filme(filme3, 2)
+
+
+cliente1.devolver_filme(filme1, 10)
+
+cliente2.devolver_filme(filme2, 4)
+
+cliente4.listar_filmes_emprestados()
 
 mostrar_informacoes_clientes()
+mostrar_filmes_disponiveis()
