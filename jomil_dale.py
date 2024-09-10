@@ -14,7 +14,7 @@ class Estoque:
             caixa = novo_estado[origem].pop()
             novo_estado[destino].append(caixa)
             return novo_estado, caixa
-        return estado_atual, None  # Caso não haja caixa para mover
+        return estado_atual, None  
 
     def busca_em_largura(self):
         fila = deque([(self.estado_inicial, [], [self.estado_inicial])])  # (estado_atual, caminho_percorrido, estados_visitados)
@@ -220,3 +220,5 @@ chama_busca_A_star()
 chamar_busca_largura()
 chamar_busca_profundidade_iterativa()
 # chamar_busca_profundidade_normal() # bomba explodindo real
+
+
