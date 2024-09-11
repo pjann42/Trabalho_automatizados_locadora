@@ -136,6 +136,7 @@ class Estoque:
             visitados.add(estado_tupla)
 
             # Gerar novos estados movendo caixas entre pilhas
+            
             for origem in range(3):
                 for destino in range(3):
                     if origem != destino:
