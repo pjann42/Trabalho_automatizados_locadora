@@ -1,3 +1,4 @@
+from criar_casos import criar_casos_aleatorios
 from collections import deque
 from heapq import heappush, heappop
 import time
@@ -159,7 +160,7 @@ def chamar_busca_largura():
     start_time = time.time()
     caminho_largura, estados_largura, total_estados_largura = estoque.busca_em_largura()
     end_time = time.time()
-
+    '''
     if caminho_largura:
         print("Movimentos para atingir o estado final (Busca em Largura):")
         for movimento in caminho_largura:
@@ -172,17 +173,17 @@ def chamar_busca_largura():
         print("Não foi possível encontrar uma solução (Busca em Largura).")
 
     print(f"Tempo de execução (Busca em Largura): {end_time - start_time:.4f} segundos")
-
+    '''
     total_time = end_time - start_time
 
     return total_estados_largura, total_time, estados_largura
 
-def chamar_busca_profundidade_limitada(limite=40):
+def chamar_busca_profundidade_limitada(limite=60):
 
     start_time = time.time()
     caminho_profundidade_limitada, estados_profundidade_limitada, total_estados_profundidade_limitada = estoque.busca_profundidade_limitada(limite)
     end_time = time.time()
-
+    '''
     if caminho_profundidade_limitada:
         print("Movimentos para atingir o estado final (Busca em Profundidade Limitada):")
         for movimento in caminho_profundidade_limitada:
@@ -193,7 +194,7 @@ def chamar_busca_profundidade_limitada(limite=40):
             print(estado)
     else:
         print("Não foi possível encontrar uma solução (Busca em Profundidade Limitada).")
-    
+    '''
     total_time = (end_time - start_time)
 
     print(f"Tempo de execução (Busca em Profundidade Limitada): {end_time - start_time:.4f} segundos")
@@ -204,7 +205,7 @@ def chamar_busca_a_estrela():
     start_time = time.time()
     caminho_a_estrela, estados_a_estrela, total_estados_a_estrela = estoque.busca_a_estrela()
     end_time = time.time()
-
+    '''
     if caminho_a_estrela:
         print("Movimentos para atingir o estado final (Busca A*):")
         for movimento in caminho_a_estrela:
@@ -215,7 +216,7 @@ def chamar_busca_a_estrela():
             print(estado)
     else:
         print("Não foi possível encontrar uma solução (Busca A*).")
-
+    '''
     total_time = end_time - start_time
 
     print(f"Tempo de execução (Busca A*): {end_time - start_time:.4f} segundos")
@@ -223,19 +224,65 @@ def chamar_busca_a_estrela():
 
 # Exemplo de uso:
 
-pilhas_inicial = [['c', 'b', 'a'], ['e', 'd'], ['g', 'f']]
-pilhas_final = [[], ['f', 'g', 'd', 'b'], ['c', 'a', 'e']]
+# pilhas_inicial = [['c', 'b', 'a'], ['e', 'd'], ['g', 'f']]
+# pilhas_final = [[], ['f', 'g', 'd', 'b'], ['c', 'a', 'e']]
 
-estoque = Estoque(pilhas_inicial, pilhas_final)
+# pilhas_inicial, pilhas_final = criar_casos_aleatorios(8)
+# estoque = Estoque(pilhas_inicial, pilhas_final)
 
-total_largura, time_largura, estados_largura = chamar_busca_largura()
-total_profundidade_limitada, time_profundidade, estados_profundidade_limitado = chamar_busca_profundidade_limitada()
-total_a_estrela, time_a_estrela, estados_busca_estrela = chamar_busca_a_estrela()
+# total_largura, time_largura, estados_largura = chamar_busca_largura()
+# total_profundidade_limitada, time_profundidade, estados_profundidade_limitado = chamar_busca_profundidade_limitada()
+# total_a_estrela, time_a_estrela, estados_busca_estrela = chamar_busca_a_estrela()
 
-plot_estados_visitados(total_a_estrela, total_largura, total_profundidade_limitada)
+# plot_estados_visitados(total_a_estrela, total_largura, total_profundidade_limitada)
 
-print(f'Nós totais A*: {total_a_estrela}, tempo total: {time_a_estrela},número de passos até solução: {len(estados_busca_estrela)}')
-print(f'Nós totais Largura*: {total_largura}, tempo total: {time_largura},número de passos até solução: {len(estados_largura)}')
-print(f'Nós totais Profundidade Limitada*: {total_profundidade_limitada}, tempo total: {time_profundidade},número de passos até solução: {len(estados_profundidade_limitado)}')
+# print(f'Nós totais A*: {total_a_estrela}, tempo total: {time_a_estrela},número de passos até solução: {len(estados_busca_estrela)}')
+# print(f'Nós totais Largura: {total_largura}, tempo total: {time_largura},número de passos até solução: {len(estados_largura)}')
+# print(f'Nós totais Profundidade Limitada*: {total_profundidade_limitada}, tempo total: {time_profundidade},número de passos até solução: {len(estados_profundidade_limitado)}')
 
+import matplotlib.pyplot as plt
+
+# Inicialização das listas
+import matplotlib.pyplot as plt
+
+# Inicialização das listas
+lista_nodos_largura = []
+lista_nodos_profundiade = []
+lista_nodos_a_estrela = []
+
+# Defina o intervalo de k
+k_min = 1
+k_max = 8
+
+# Executa as buscas para diferentes valores de k
+for k in range(k_min, k_max):
+    pilhas_inicial, pilhas_final = criar_casos_aleatorios((k))
+    estoque = Estoque(pilhas_inicial, pilhas_final)
+    lista_nodos_largura.append(chamar_busca_largura()[0])
+    lista_nodos_profundiade.append(chamar_busca_profundidade_limitada()[0])
+    lista_nodos_a_estrela.append(chamar_busca_a_estrela()[0])
+
+# Ajusta os valores de k para o intervalo usado
+k_values = list(range(k_min, k_max))
+
+# Criação do gráfico
+plt.figure(figsize=(10, 6))
+plt.plot(k_values, lista_nodos_largura, marker='o', label='Busca em Largura')
+plt.plot(k_values, lista_nodos_profundiade, marker='o', label='Busca em Profundidade Limitada')
+plt.plot(k_values, lista_nodos_a_estrela, marker='o', label='Busca A*')
+
+# Define o eixo y em escala logarítmica
+plt.yscale('log')
+
+# Adiciona título e rótulos aos eixos
+plt.title('Número de Nós Visitados vs. Valor de k')
+plt.xlabel('Valor de k')
+plt.ylabel('Número de Nós Visitados (escala logarítmica)')
+
+# Adiciona uma legenda
+plt.legend()
+
+# Exibe o gráfico
+
+plt.show()
 
