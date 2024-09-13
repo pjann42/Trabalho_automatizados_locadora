@@ -168,6 +168,7 @@ class Estoque:
                             pilha.append((novo_estado, novo_caminho, profundidade + 1, estados_visitados + [novo_estado]))
 
 def criar_casos_aleatorios(num_caixas):
+
     num_pilhas = 3
 
     caixas = [chr(i) for i in range(97, 97 + num_caixas)] 
@@ -189,7 +190,7 @@ def criar_casos_aleatorios(num_caixas):
 
     if num_caixas > 2:
 
-        max_certas = num_caixas - 2
+        max_certas = 0
         while True:
             corretas = 0
             for i in range(num_pilhas):
@@ -368,7 +369,6 @@ for n_caixas in range(k_min, k_max):
     lista_tempo_a_estrela.append(total_time_a_estrela)
     lista_passos_a_estrela.append(estados_a_estrela)
  
-
 import matplotlib.pyplot as plt
 
 k_values = list(range(k_min, k_max))
@@ -390,12 +390,25 @@ plt.ylabel('Número de Nós Visitados')
 plt.legend()
 plt.show()
 
+# Gráfico do Número de Nós Visitados
+plt.figure(figsize=(10, 6))
+plt.plot(k_values, lista_nodos_largura, marker='o', label='Busca em Largura')
+plt.plot(k_values, lista_nodos_profundidade, marker='o', label='Busca em Profundidade Limitada')
+plt.plot(k_values, lista_nodos_profundidade_iterativa, marker='o', label='Busca em Profundidade Iterativa')
+plt.plot(k_values, lista_nodos_a_estrela, marker='o', label='Busca A*')
+plt.yscale('log')
+plt.title('Número de Nós Visitados x Número de Caixas')
+plt.xlabel('Número de Caixas')
+plt.ylabel('Número de Nós Visitados')
+plt.legend()
+plt.show()
+
 # Filtrar valores de k_values e listas de tempo para k >= 3
-k_values_filtrados = [k for k in k_values if k >= 3]
-lista_tempo_largura_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_largura) if k >= 3]
-lista_tempo_profundidade_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_profundidade) if k >= 3]
-lista_tempo_profundidade_iterativa_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_profundidade_iterativa) if k >= 3]
-lista_tempo_a_estrela_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_a_estrela) if k >= 3]
+k_values_filtrados = [k for k in k_values if k >= 4]
+lista_tempo_largura_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_largura) if k >= 4]
+lista_tempo_profundidade_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_profundidade) if k >= 4]
+lista_tempo_profundidade_iterativa_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_profundidade_iterativa) if k >= 4]
+lista_tempo_a_estrela_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_a_estrela) if k >= 4]
 
 # Gráfico do Tempo Total
 plt.figure(figsize=(10, 6))
@@ -404,7 +417,7 @@ plt.plot(k_values_filtrados, lista_tempo_profundidade_filtrados, marker='o', lab
 plt.plot(k_values_filtrados, lista_tempo_profundidade_iterativa_filtrados, marker='o', label='Busca em Profundidade Iterativa')
 plt.plot(k_values_filtrados, lista_tempo_a_estrela_filtrados, marker='o', label='Busca A*')
 plt.yscale('log')
-plt.title('Tempo Total x Número de Caixas (k >= 4)')
+plt.title('Tempo Total x Número de Caixas')
 plt.xlabel('Número de Caixas')
 plt.ylabel('Tempo Total (s)')
 plt.legend()
