@@ -76,13 +76,38 @@ class Estoque:
 
         return [], [], estados_totais_visitados 
 
+    def busca_profundidade_iterativa(self):
+        profundidade = 1
+        nodos_observados = []  # Lista para guardar os nodos observados
+
+        while True:
+            caminho, estados_visitados, estados_totais_visitados = self.busca_profundidade_limitada(profundidade)
+            nodos_observados.extend(estados_visitados)  # Adiciona os nodos observados na lista
+
+            if caminho:  # Se encontrou uma solução
+                return caminho, nodos_observados, estados_totais_visitados
+            
+            profundidade += 1  # Incrementa o limite de profundidade
+
+            # Se não encontramos solução e a profundidade ultrapassou um limite máximo, podemos parar
+            if profundidade > 100:  # Ajuste o limite de profundidade máximo conforme necessário
+                break
+
+        return [], nodos_observados, 0  # Retorno final caso não tenha encontrado solução
+
     def heuristica(self, estado_atual):
-        correto = 0
+        penalidade = 0
         for pilha_idx, pilha in enumerate(estado_atual):
-            for caixa in pilha:
-                if caixa in self.estado_final[pilha_idx]:
-                    correto += 1
-        return len(self.estado_final[0] + self.estado_final[1] + self.estado_final[2]) - correto
+            for posicao, caixa in enumerate(pilha):
+                # Penaliza se a caixa não está na pilha correta
+                if caixa not in self.estado_final[pilha_idx]:
+                    penalidade += 1
+                else:
+                    # Se está na pilha certa, mas fora de ordem, também penalize
+                    posicao_final = self.estado_final[pilha_idx].index(caixa)
+                    if posicao > posicao_final:
+                        penalidade += 1  # Penalize se a caixa está abaixo de outras caixas erradas
+        return penalidade
 
     def busca_a_estrela(self):
         fila = []
@@ -215,7 +240,31 @@ def chamar_busca_largura():
 
     return total_estados_largura, total_time, estados_largura
 
-def chamar_busca_profundidade_limitada(limite=60):
+def chamar_busca_profundidade_iterativa():
+    start_time = time.time()
+    caminho_profundidade, nodos_profundidade, total_estados_profundidade = estoque.busca_profundidade_iterativa()
+    end_time = time.time()
+
+    '''
+    if caminho_profundidade:
+        print("Movimentos para atingir o estado final (Busca em Profundidade Iterativa):")
+        for movimento in caminho_profundidade:
+            print(f"Mover a caixa '{movimento[2]}' da pilha {movimento[0] + 1} para a pilha {movimento[1] + 1}")
+
+        print("\nTransições de estados (Busca em Profundidade Iterativa):")
+        for estado in nodos_profundidade:
+            print(estado)
+    else:
+        print("Não foi possível encontrar uma solução (Busca em Profundidade Iterativa).")
+    '''
+
+    print(f"Tempo de execução (Busca em Profundidade Iterativa): {end_time - start_time:.4f} segundos")
+
+    total_time = end_time - start_time
+
+    return total_estados_profundidade, total_time, nodos_profundidade
+
+def chamar_busca_profundidade_limitada(limite=100):
 
     start_time = time.time()
     caminho_profundidade_limitada, estados_profundidade_limitada, total_estados_profundidade_limitada = estoque.busca_profundidade_limitada(limite)
@@ -283,6 +332,10 @@ lista_nodos_profundidade = []
 lista_tempo_profundidade = []
 lista_passos_profundidade = []
 
+lista_nodos_profundidade_iterativa = []
+lista_tempo_profundidade_iterativa = []
+lista_passos_profundidade_iterativa = []
+
 lista_nodos_a_estrela = []
 lista_tempo_a_estrela = []
 lista_passos_a_estrela = []
@@ -305,20 +358,30 @@ for n_caixas in range(k_min, k_max):
     lista_tempo_profundidade.append(total_time_profundidade)
     lista_passos_profundidade.append(estados_profundidade)
 
+    total_estados_profundidade_iterativa, total_time_profundidade_iterativa, estados_profundidade_iterativa = chamar_busca_profundidade_iterativa()
+    lista_nodos_profundidade_iterativa.append(total_estados_profundidade_iterativa)
+    lista_tempo_profundidade_iterativa.append(total_time_profundidade_iterativa)
+    lista_passos_profundidade_iterativa.append(estados_profundidade_iterativa)
+
     total_estados_a_estrela, total_time_a_estrela, estados_a_estrela = chamar_busca_a_estrela()
     lista_nodos_a_estrela.append(total_estados_a_estrela)
     lista_tempo_a_estrela.append(total_time_a_estrela)
     lista_passos_a_estrela.append(estados_a_estrela)
  
 
+import matplotlib.pyplot as plt
+
 k_values = list(range(k_min, k_max))
 lista_passos_largura_count = [len(steps) for steps in lista_passos_largura]
 lista_passos_profundidade_count = [len(steps) for steps in lista_passos_profundidade]
+lista_passos_profundidade_iterativa_count = [len(steps) for steps in lista_passos_profundidade_iterativa]
 lista_passos_a_estrela_count = [len(steps) for steps in lista_passos_a_estrela]
 
+# Gráfico do Número de Nós Visitados
 plt.figure(figsize=(10, 6))
 plt.plot(k_values, lista_nodos_largura, marker='o', label='Busca em Largura')
 plt.plot(k_values, lista_nodos_profundidade, marker='o', label='Busca em Profundidade Limitada')
+plt.plot(k_values, lista_nodos_profundidade_iterativa, marker='o', label='Busca em Profundidade Iterativa')
 plt.plot(k_values, lista_nodos_a_estrela, marker='o', label='Busca A*')
 #plt.yscale('log')
 plt.title('Número de Nós Visitados x Número de Caixas')
@@ -327,26 +390,37 @@ plt.ylabel('Número de Nós Visitados')
 plt.legend()
 plt.show()
 
+# Filtrar valores de k_values e listas de tempo para k >= 3
+k_values_filtrados = [k for k in k_values if k >= 3]
+lista_tempo_largura_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_largura) if k >= 3]
+lista_tempo_profundidade_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_profundidade) if k >= 3]
+lista_tempo_profundidade_iterativa_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_profundidade_iterativa) if k >= 3]
+lista_tempo_a_estrela_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_a_estrela) if k >= 3]
+
+# Gráfico do Tempo Total
 plt.figure(figsize=(10, 6))
-plt.plot(k_values, lista_tempo_largura, marker='o', label='Busca em Largura')
-plt.plot(k_values, lista_tempo_profundidade, marker='o', label='Busca em Profundidade Limitada')
-plt.plot(k_values, lista_tempo_a_estrela, marker='o', label='Busca A*')
+plt.plot(k_values_filtrados, lista_tempo_largura_filtrados, marker='o', label='Busca em Largura')
+plt.plot(k_values_filtrados, lista_tempo_profundidade_filtrados, marker='o', label='Busca em Profundidade Limitada')
+plt.plot(k_values_filtrados, lista_tempo_profundidade_iterativa_filtrados, marker='o', label='Busca em Profundidade Iterativa')
+plt.plot(k_values_filtrados, lista_tempo_a_estrela_filtrados, marker='o', label='Busca A*')
 plt.yscale('log')
-plt.title('Tempo Total x Número de Caixas')
+plt.title('Tempo Total x Número de Caixas (k >= 4)')
 plt.xlabel('Número de Caixas')
 plt.ylabel('Tempo Total (s)')
 plt.legend()
 plt.show()
 
+# Gráfico do Número de Passos/Estados
 plt.figure(figsize=(10, 6))
 # Busca em Largura com quadrados maiores
 plt.plot(k_values, lista_passos_largura_count, marker='s', markersize=8, linestyle='-', label='Busca em Largura')
 
-# Busca em Profundidade Limitada e Busca A* com marcadores circulares
+# Busca em Profundidade Limitada, Busca em Profundidade Iterativa e Busca A* com marcadores circulares
 plt.plot(k_values, lista_passos_profundidade_count, marker='o', markersize=6, linestyle='-', label='Busca em Profundidade Limitada')
+plt.plot(k_values, lista_passos_profundidade_iterativa_count, marker='o', markersize=6, linestyle='-', label='Busca em Profundidade Iterativa')
 plt.plot(k_values, lista_passos_a_estrela_count, marker='o', markersize=6, linestyle='-', label='Busca A*')
 
-plt.yscale('log')
+#plt.yscale('log')
 plt.title('Número de Passos/Estados x Número de Caixas')
 plt.xlabel('Número de Caixas')
 plt.ylabel('Número de Passos/Estados')
@@ -354,3 +428,6 @@ plt.ylabel('Número de Passos/Estados')
 plt.legend()
 plt.show()
 
+# Pilha Errada: Se uma caixa está na pilha errada, adicionamos uma penalidade de +1. Isso é o mínimo necessário para movê-la para a pilha correta.
+# Ordem Correta: Se a caixa está na pilha correta, verificamos se está fora de ordem (por exemplo, se uma caixa mais acima na pilha deveria estar abaixo dela). Se estiver fora de ordem, penalizamos com +1.
+# Admissibilidade: A heurística não superestima o custo real. Cada caixa que precisa ser movida gera apenas o número mínimo de penalizações necessárias, garantindo que o A* explore o caminho correto para encontrar a solução ótima.
