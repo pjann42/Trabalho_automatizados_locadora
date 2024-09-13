@@ -1,8 +1,10 @@
-from criar_casos import criar_casos_aleatorios
+#Trabalho Busca
+
 from collections import deque
-from heapq import heappush, heappop
 import time
 import matplotlib.pyplot as plt
+import random
+from heapq import heappush, heappop
 
 class Estoque:
     def __init__(self, pilhas_inicial, pilhas_final):
@@ -10,7 +12,7 @@ class Estoque:
         self.estado_final = pilhas_final
 
     def mover_caixa(self, estado_atual, origem, destino):
-        novo_estado = [list(pilha) for pilha in estado_atual]  # Copia o estado atual
+        novo_estado = [list(pilha) for pilha in estado_atual]  
         if len(novo_estado[origem]) > 0:
             caixa = novo_estado[origem].pop()
             novo_estado[destino].append(caixa)
@@ -18,76 +20,74 @@ class Estoque:
         return estado_atual, None
 
     def busca_em_largura(self):
-        fila = deque([(self.estado_inicial, [], [self.estado_inicial])])  # (estado_atual, caminho_percorrido, estados_visitados)
-        visitados = set()  # Para armazenar estados já visitados
+        fila = deque([(self.estado_inicial, [], [self.estado_inicial])])  
+        visitados = set()  
         estados_totais_visitados = 0
 
         while fila:
             estado_atual, caminho, estados_visitados = fila.popleft()
-            estado_tupla = tuple(tuple(pilha) for pilha in estado_atual)  # Converte para tupla para hash
+            estado_tupla = tuple(tuple(pilha) for pilha in estado_atual)  
             estados_totais_visitados += 1
 
             if estado_atual == self.estado_final:
-                return caminho, estados_visitados, estados_totais_visitados  # Retorna o caminho, estados visitados e total de estados visitados
+                return caminho, estados_visitados, estados_totais_visitados  
 
             if estado_tupla in visitados:
                 continue
 
             visitados.add(estado_tupla)
 
-            # Gerar novos estados movendo caixas entre pilhas
             for origem in range(3):
                 for destino in range(3):
                     if origem != destino:
                         novo_estado, caixa = self.mover_caixa(estado_atual, origem, destino)
-                        if caixa is not None:  # Verifica se a caixa foi movida
+                        if caixa is not None:  
                             novo_caminho = caminho + [(origem, destino, caixa)]
                             fila.append((novo_estado, novo_caminho, estados_visitados + [novo_estado]))
 
-        return None, None, estados_totais_visitados  # Não encontrou solução
+        return None, None, estados_totais_visitados 
 
     def busca_profundidade_limitada(self, limite):
         estados_totais_visitados = 0
-        pilha = [(self.estado_inicial, [], 0, [self.estado_inicial])]  # (estado_atual, caminho_percorrido, profundidade, estados_visitados)
-        visitados = set()  # Para armazenar estados já visitados
+        pilha = [(self.estado_inicial, [], 0, [self.estado_inicial])]  
+        visitados = set()  
 
         while pilha:
             estado_atual, caminho, profundidade, estados_visitados = pilha.pop()
-            estado_tupla = tuple(tuple(pilha) for pilha in estado_atual)  # Converte para tupla para hash
+            estado_tupla = tuple(tuple(pilha) for pilha in estado_atual)  
             estados_totais_visitados += 1
 
             if estado_atual == self.estado_final:
-                return caminho, estados_visitados, estados_totais_visitados  # Retorna o caminho, estados visitados e total de estados visitados
+                return caminho, estados_visitados, estados_totais_visitados  
 
             if estado_tupla in visitados or profundidade >= limite:
                 continue
 
             visitados.add(estado_tupla)
 
-            # Gerar novos estados movendo caixas entre pilhas
+            
             for origem in range(3):
                 for destino in range(3):
                     if origem != destino:
                         novo_estado, caixa = self.mover_caixa(estado_atual, origem, destino)
-                        if caixa is not None:  # Verifica se a caixa foi movida
+                        if caixa is not None:  
                             novo_caminho = caminho + [(origem, destino, caixa)]
                             pilha.append((novo_estado, novo_caminho, profundidade + 1, estados_visitados + [novo_estado]))
 
-        return None, None, estados_totais_visitados  # Não encontrou solução
-
+        return [], [], estados_totais_visitados 
 
     def heuristica(self, estado_atual):
         correto = 0
         for pilha_idx, pilha in enumerate(estado_atual):
             for caixa in pilha:
                 if caixa in self.estado_final[pilha_idx]:
-                    correto += 2
+                    correto += 1
         return len(self.estado_final[0] + self.estado_final[1] + self.estado_final[2]) - correto
 
     def busca_a_estrela(self):
         fila = []
         heappush(fila, (0 + self.heuristica(self.estado_inicial), self.estado_inicial, [], [self.estado_inicial]))
-        visitados = set()  # Para armazenar estados já visitados
+        visitados = set()  
         estados_totais_visitados = 0
 
         while fila:
@@ -95,59 +95,96 @@ class Estoque:
             estados_totais_visitados += 1
 
             if estado_atual == self.estado_final:
-                return caminho, estados_visitados, estados_totais_visitados  # Retorna o caminho, estados visitados e total de estados visitados
+                return caminho, estados_visitados, estados_totais_visitados  
 
-            estado_tupla = tuple(tuple(pilha) for pilha in estado_atual)  # Converte para tupla para hash
+            estado_tupla = tuple(tuple(pilha) for pilha in estado_atual)  
 
             if estado_tupla in visitados:
                 continue
 
             visitados.add(estado_tupla)
 
-            # Gerar novos estados movendo caixas entre pilhas
             for origem in range(3):
                 for destino in range(3):
                     if origem != destino:
                         novo_estado, caixa = self.mover_caixa(estado_atual, origem, destino)
-                        if caixa is not None:  # Verifica se a caixa foi movida
+                        if caixa is not None: 
                             novo_caminho = caminho + [(origem, destino, caixa)]
-                            custo = len(novo_caminho)  # Custo é o número de movimentos
+                            custo = len(novo_caminho)  
                             heuristica = self.heuristica(novo_estado)
                             custo_total_novo = custo + heuristica
                             heappush(fila, (custo_total_novo, novo_estado, novo_caminho, estados_visitados + [novo_estado]))
 
     def busca_profundidade_normal(self):
 
-        pilha = [(self.estado_inicial, [], 0, [self.estado_inicial])]  # (estado_atual, caminho_percorrido, profundidade, estados_visitados)
-        visitados = set()  # Para armazenar estados já visitados
+        pilha = [(self.estado_inicial, [], 0, [self.estado_inicial])] 
+        visitados = set()  
         estados_totais_visitados = 0
 
         while pilha:
             estado_atual, caminho, profundidade, estados_visitados = pilha.pop()
-            estado_tupla = tuple(tuple(pilha) for pilha in estado_atual)  # Converte para tupla para hash
+            estado_tupla = tuple(tuple(pilha) for pilha in estado_atual)  
             estados_totais_visitados += 1
 
             if estado_atual == self.estado_final:
-                return caminho, estados_visitados, estados_totais_visitados  # Retorna o caminho, estados visitados e total de estados visitados
+                return caminho, estados_visitados, estados_totais_visitados  
 
             if estado_tupla in visitados:
                 continue
 
             visitados.add(estado_tupla)
 
-            # Gerar novos estados movendo caixas entre pilhas
             for origem in range(3):
                 for destino in range(3):
                     if origem != destino:
                         novo_estado, caixa = self.mover_caixa(estado_atual, origem, destino)
-                        if caixa is not None:  # Verifica se a caixa foi movida
+                        if caixa is not None:  
                             novo_caminho = caminho + [(origem, destino, caixa)]
                             pilha.append((novo_estado, novo_caminho, profundidade + 1, estados_visitados + [novo_estado]))
 
+def criar_casos_aleatorios(num_caixas):
+    num_pilhas = 3
+
+    caixas = [chr(i) for i in range(97, 97 + num_caixas)] 
+
+    caixas_iniciais = caixas[:]
+    random.shuffle(caixas_iniciais)
+
+    caixas_finais = caixas[:]
+    random.shuffle(caixas_finais)
+
+    pilhas_inicial = [[] for _ in range(num_pilhas)]
+    pilhas_final = [[] for _ in range(num_pilhas)]
+
+    for caixa in caixas_iniciais:
+        pilhas_inicial[random.randint(0, num_pilhas - 1)].append(caixa)
+
+    for caixa in caixas_finais:
+        pilhas_final[random.randint(0, num_pilhas - 1)].append(caixa)
+
+    if num_caixas > 2:
+
+        max_certas = num_caixas - 2
+        while True:
+            corretas = 0
+            for i in range(num_pilhas):
+                for caixa in pilhas_inicial[i]:
+                    if caixa in pilhas_final[i]:
+                        corretas += 1
+            if corretas <= max_certas:
+                break
+            # Se há mais do que o permitido, embaralhe as caixas finais novamente
+            random.shuffle(caixas_finais)
+            pilhas_final = [[] for _ in range(num_pilhas)]
+            for caixa in caixas_finais:
+                pilhas_final[random.randint(0, num_pilhas - 1)].append(caixa)
+
+    return pilhas_inicial, pilhas_final
+
 def plot_estados_visitados(nos_a_estrela, nos_largura, nos_profundidade_limitada):
+
     algoritmos = ['Busca A*', 'Busca em Largura', 'Busca em Profundidade Limitada']
     visitados = [nos_a_estrela, nos_largura, nos_profundidade_limitada]
-
     plt.figure(figsize=(10, 6))
     plt.bar(algoritmos, visitados, color=['blue', 'green', 'orange'])
     plt.title("Número Total de Estados Visitados por Algoritmo")
@@ -170,10 +207,10 @@ def chamar_busca_largura():
         for estado in estados_largura:
             print(estado)
     else:
-        print("Não foi possível encontrar uma solução (Busca em Largura).")
+        print("Não foi possível encontrar uma solução (Busca em Largura).")'''
 
     print(f"Tempo de execução (Busca em Largura): {end_time - start_time:.4f} segundos")
-    '''
+    
     total_time = end_time - start_time
 
     return total_estados_largura, total_time, estados_largura
@@ -222,8 +259,6 @@ def chamar_busca_a_estrela():
     print(f"Tempo de execução (Busca A*): {end_time - start_time:.4f} segundos")
     return total_estados_a_estrela, total_time, estados_a_estrela
 
-# Exemplo de uso:
-
 # pilhas_inicial = [['c', 'b', 'a'], ['e', 'd'], ['g', 'f']]
 # pilhas_final = [[], ['f', 'g', 'd', 'b'], ['c', 'a', 'e']]
 
@@ -240,49 +275,82 @@ def chamar_busca_a_estrela():
 # print(f'Nós totais Largura: {total_largura}, tempo total: {time_largura},número de passos até solução: {len(estados_largura)}')
 # print(f'Nós totais Profundidade Limitada*: {total_profundidade_limitada}, tempo total: {time_profundidade},número de passos até solução: {len(estados_profundidade_limitado)}')
 
-import matplotlib.pyplot as plt
-
-# Inicialização das listas
-import matplotlib.pyplot as plt
-
-# Inicialização das listas
 lista_nodos_largura = []
-lista_nodos_profundiade = []
-lista_nodos_a_estrela = []
+lista_tempo_largura = []
+lista_passos_largura = []
 
-# Defina o intervalo de k
-k_min = 1
+lista_nodos_profundidade = []
+lista_tempo_profundidade = []
+lista_passos_profundidade = []
+
+lista_nodos_a_estrela = []
+lista_tempo_a_estrela = []
+lista_passos_a_estrela = []
+
+k_min = 2
 k_max = 8
 
-# Executa as buscas para diferentes valores de k
-for k in range(k_min, k_max):
-    pilhas_inicial, pilhas_final = criar_casos_aleatorios((k))
+for n_caixas in range(k_min, k_max):
+
+    pilhas_inicial, pilhas_final = criar_casos_aleatorios(n_caixas)
     estoque = Estoque(pilhas_inicial, pilhas_final)
-    lista_nodos_largura.append(chamar_busca_largura()[0])
-    lista_nodos_profundiade.append(chamar_busca_profundidade_limitada()[0])
-    lista_nodos_a_estrela.append(chamar_busca_a_estrela()[0])
 
-# Ajusta os valores de k para o intervalo usado
+    total_estados_largura, total_time_largura, estados_largura = chamar_busca_largura()
+    lista_nodos_largura.append(total_estados_largura)
+    lista_tempo_largura.append(total_time_largura)
+    lista_passos_largura.append(estados_largura)
+ 
+    total_estados_profundidade, total_time_profundidade, estados_profundidade = chamar_busca_profundidade_limitada()
+    lista_nodos_profundidade.append(total_estados_profundidade)
+    lista_tempo_profundidade.append(total_time_profundidade)
+    lista_passos_profundidade.append(estados_profundidade)
+
+    total_estados_a_estrela, total_time_a_estrela, estados_a_estrela = chamar_busca_a_estrela()
+    lista_nodos_a_estrela.append(total_estados_a_estrela)
+    lista_tempo_a_estrela.append(total_time_a_estrela)
+    lista_passos_a_estrela.append(estados_a_estrela)
+ 
+
 k_values = list(range(k_min, k_max))
+lista_passos_largura_count = [len(steps) for steps in lista_passos_largura]
+lista_passos_profundidade_count = [len(steps) for steps in lista_passos_profundidade]
+lista_passos_a_estrela_count = [len(steps) for steps in lista_passos_a_estrela]
 
-# Criação do gráfico
 plt.figure(figsize=(10, 6))
 plt.plot(k_values, lista_nodos_largura, marker='o', label='Busca em Largura')
-plt.plot(k_values, lista_nodos_profundiade, marker='o', label='Busca em Profundidade Limitada')
+plt.plot(k_values, lista_nodos_profundidade, marker='o', label='Busca em Profundidade Limitada')
 plt.plot(k_values, lista_nodos_a_estrela, marker='o', label='Busca A*')
-
-# Define o eixo y em escala logarítmica
-plt.yscale('log')
-
-# Adiciona título e rótulos aos eixos
-plt.title('Número de Nós Visitados vs. Valor de k')
-plt.xlabel('Valor de k')
-plt.ylabel('Número de Nós Visitados (escala logarítmica)')
-
-# Adiciona uma legenda
+#plt.yscale('log')
+plt.title('Número de Nós Visitados x Número de Caixas')
+plt.xlabel('Número de Caixas')
+plt.ylabel('Número de Nós Visitados')
 plt.legend()
+plt.show()
 
-# Exibe o gráfico
+plt.figure(figsize=(10, 6))
+plt.plot(k_values, lista_tempo_largura, marker='o', label='Busca em Largura')
+plt.plot(k_values, lista_tempo_profundidade, marker='o', label='Busca em Profundidade Limitada')
+plt.plot(k_values, lista_tempo_a_estrela, marker='o', label='Busca A*')
+plt.yscale('log')
+plt.title('Tempo Total x Número de Caixas')
+plt.xlabel('Número de Caixas')
+plt.ylabel('Tempo Total (s)')
+plt.legend()
+plt.show()
 
+plt.figure(figsize=(10, 6))
+# Busca em Largura com quadrados maiores
+plt.plot(k_values, lista_passos_largura_count, marker='s', markersize=8, linestyle='-', label='Busca em Largura')
+
+# Busca em Profundidade Limitada e Busca A* com marcadores circulares
+plt.plot(k_values, lista_passos_profundidade_count, marker='o', markersize=6, linestyle='-', label='Busca em Profundidade Limitada')
+plt.plot(k_values, lista_passos_a_estrela_count, marker='o', markersize=6, linestyle='-', label='Busca A*')
+
+plt.yscale('log')
+plt.title('Número de Passos/Estados x Número de Caixas')
+plt.xlabel('Número de Caixas')
+plt.ylabel('Número de Passos/Estados')
+
+plt.legend()
 plt.show()
 
