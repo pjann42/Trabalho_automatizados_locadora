@@ -199,18 +199,18 @@ def chamar_busca_profundidade_normal():
     end_time = time.time()
     total_time = end_time - start_time
     
-    if caminho_profundidade:
-        print("Movimentos para atingir o estado final (Busca em Largura):")
-        for movimento in caminho_profundidade:
-            print(f"Mover a caixa '{movimento[2]}' da pilha {movimento[0] + 1} para a pilha {movimento[1] + 1}")
+    # if caminho_profundidade:
+    #     print("Movimentos para atingir o estado final (Busca em Largura):")
+    #     for movimento in caminho_profundidade:
+    #         print(f"Mover a caixa '{movimento[2]}' da pilha {movimento[0] + 1} para a pilha {movimento[1] + 1}")
 
-        print("\nTransições de estados (Busca em Largura):")
-        for estado in estados_profundidade:
-            print(estado)
-    else:
-        print("Não foi possível encontrar uma solução (Busca em Largura).")
+    #     print("\nTransições de estados (Busca em Largura):")
+    #     for estado in estados_profundidade:
+    #         print(estado)
+    # else:
+    #     print("Não foi possível encontrar uma solução (Busca em Largura).")
 
-    print(f"Tempo de execução (Busca em Largura): {end_time - start_time:.4f} segundos")
+    print(f"Tempo de execução (Busca em Profundidade): {end_time - start_time:.4f} segundos")
 
     return total_estados_profundidade, total_time, estados_profundidade
 
@@ -324,13 +324,19 @@ def criar_casos_aleatorios(num_caixas):
 
 ####################################### PROBLEMA ######################################
 
+import matplotlib.pyplot as plt
+
+# Dados das buscas
+import matplotlib.pyplot as plt
+
+# Dados das buscas
 lista_nodos_largura = []
 lista_tempo_largura = []
 lista_passos_largura = []
 
-lista_nodos_profundidade = []
-lista_tempo_profundidade = []
-lista_passos_profundidade = []
+lista_nodos_profundidade_limitada = []
+lista_tempo_profundidade_limitada = []
+lista_passos_profundidade_limitada = []
 
 lista_nodos_profundidade_iterativa = []
 lista_tempo_profundidade_iterativa = []
@@ -345,12 +351,12 @@ lista_tempo_profundidade_normal = []
 lista_passos_profundidade_normal = []
 
 k_min = 2
-k_max = 8
+k_max = 9
 
 for n_caixas in range(k_min, k_max):
-
     pilhas_inicial, pilhas_final = criar_casos_aleatorios(n_caixas)
     estoque = Estoque(pilhas_inicial, pilhas_final)
+    print(n_caixas)
 
     total_estados_largura, total_time_largura, estados_largura = chamar_busca_largura()
     lista_nodos_largura.append(total_estados_largura)
@@ -358,9 +364,9 @@ for n_caixas in range(k_min, k_max):
     lista_passos_largura.append(estados_largura)
  
     total_estados_profundidade, total_time_profundidade, estados_profundidade = chamar_busca_profundidade_limitada()
-    lista_nodos_profundidade.append(total_estados_profundidade)
-    lista_tempo_profundidade.append(total_time_profundidade)
-    lista_passos_profundidade.append(estados_profundidade)
+    lista_nodos_profundidade_limitada.append(total_estados_profundidade)
+    lista_tempo_profundidade_limitada.append(total_time_profundidade)
+    lista_passos_profundidade_limitada.append(estados_profundidade)
 
     total_estados_profundidade_iterativa, total_time_profundidade_iterativa, estados_profundidade_iterativa = chamar_busca_profundidade_iterativa()
     lista_nodos_profundidade_iterativa.append(total_estados_profundidade_iterativa)
@@ -371,26 +377,32 @@ for n_caixas in range(k_min, k_max):
     lista_nodos_a_estrela.append(total_estados_a_estrela)
     lista_tempo_a_estrela.append(total_time_a_estrela)
     lista_passos_a_estrela.append(estados_a_estrela)
-
-    # Adicionar a busca em profundidade normal
-    total_estados_profundidade_normal, total_time_profundidade_normal, estados_profundidade_normal = chamar_busca_profundidade_normal()
-    lista_nodos_profundidade_normal.append(total_estados_profundidade_normal)
-    lista_tempo_profundidade_normal.append(total_time_profundidade_normal)
-    lista_passos_profundidade_normal.append(estados_profundidade_normal)
- 
+    
+    # if n_caixas <= 6:
+    #     total_estados_profundidade_normal, total_time_profundidade_normal, estados_profundidade_normal = chamar_busca_profundidade_normal()
+    #     lista_nodos_profundidade_normal.append(total_estados_profundidade_normal)
+    #     lista_tempo_profundidade_normal.append(total_time_profundidade_normal)
+    #     lista_passos_profundidade_normal.append(estados_profundidade_normal)
+    
 k_values = list(range(k_min, k_max))
+
 lista_passos_largura_count = [len(steps) for steps in lista_passos_largura]
-lista_passos_profundidade_count = [len(steps) for steps in lista_passos_profundidade]
+lista_passos_profundidade_count = [len(steps) for steps in lista_passos_profundidade_limitada]
 lista_passos_profundidade_iterativa_count = [len(steps) for steps in lista_passos_profundidade_iterativa]
 lista_passos_a_estrela_count = [len(steps) for steps in lista_passos_a_estrela]
 lista_passos_profundidade_normal_count = [len(steps) for steps in lista_passos_profundidade_normal]
 
+# Ajuste para profundidade normal
+# k_values_profundidade_normal = [k for k in k_values if k <= 6]
+# lista_nodos_profundidade_normal_count = [lista_nodos_profundidade_normal[i] for i, k in enumerate(k_values) if k <= 6]
+
+# Plots
 plt.figure(figsize=(10, 6))
 plt.plot(k_values, lista_nodos_largura, marker='o', label='Busca em Largura')
-plt.plot(k_values, lista_nodos_profundidade, marker='o', label='Busca em Profundidade Limitada')
+plt.plot(k_values, lista_nodos_profundidade_limitada, marker='o', label='Busca em Profundidade Limitada')
 plt.plot(k_values, lista_nodos_profundidade_iterativa, marker='o', label='Busca em Profundidade Iterativa')
 plt.plot(k_values, lista_nodos_a_estrela, marker='o', label='Busca A*')
-plt.plot(k_values, lista_nodos_profundidade_normal, marker='o', label='Busca em Profundidade Normal')
+# plt.plot(k_values_profundidade_normal, lista_nodos_profundidade_normal_count, marker='o', label='Busca em Profundidade Normal')
 plt.title('Número de Nós Visitados x Número de Caixas')
 plt.xlabel('Número de Caixas')
 plt.ylabel('Número de Nós Visitados')
@@ -399,10 +411,10 @@ plt.show()
 
 plt.figure(figsize=(10, 6))
 plt.plot(k_values, lista_nodos_largura, marker='o', label='Busca em Largura')
-plt.plot(k_values, lista_nodos_profundidade, marker='o', label='Busca em Profundidade Limitada')
+plt.plot(k_values, lista_nodos_profundidade_limitada, marker='o', label='Busca em Profundidade Limitada')
 plt.plot(k_values, lista_nodos_profundidade_iterativa, marker='o', label='Busca em Profundidade Iterativa')
 plt.plot(k_values, lista_nodos_a_estrela, marker='o', label='Busca A*')
-plt.plot(k_values, lista_nodos_profundidade_normal, marker='o', label='Busca em Profundidade Normal')
+# plt.plot(k_values_profundidade_normal, lista_nodos_profundidade_normal_count, marker='o', label='Busca em Profundidade Normal')
 plt.yscale('log')
 plt.title('Número de Nós Visitados x Número de Caixas')
 plt.xlabel('Número de Caixas')
@@ -412,17 +424,17 @@ plt.show()
 
 k_values_filtrados = [k for k in k_values if k >= 4]
 lista_tempo_largura_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_largura) if k >= 4]
-lista_tempo_profundidade_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_profundidade) if k >= 4]
+lista_tempo_profundidade_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_profundidade_limitada) if k >= 4]
 lista_tempo_profundidade_iterativa_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_profundidade_iterativa) if k >= 4]
 lista_tempo_a_estrela_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_a_estrela) if k >= 4]
-lista_tempo_profundidade_normal_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_profundidade_normal) if k >= 4]
+# lista_tempo_profundidade_normal_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values_profundidade_normal, lista_tempo_profundidade_normal) if k >= 4]
 
 plt.figure(figsize=(10, 6))
 plt.plot(k_values_filtrados, lista_tempo_largura_filtrados, marker='o', label='Busca em Largura')
 plt.plot(k_values_filtrados, lista_tempo_profundidade_filtrados, marker='o', label='Busca em Profundidade Limitada')
 plt.plot(k_values_filtrados, lista_tempo_profundidade_iterativa_filtrados, marker='o', label='Busca em Profundidade Iterativa')
 plt.plot(k_values_filtrados, lista_tempo_a_estrela_filtrados, marker='o', label='Busca A*')
-plt.plot(k_values_filtrados, lista_tempo_profundidade_normal_filtrados, marker='o', label='Busca em Profundidade Normal')
+# plt.plot(k_values_filtrados, lista_tempo_profundidade_normal_filtrados, marker='o', label='Busca em Profundidade Normal')
 plt.yscale('log')
 plt.title('Tempo Total x Número de Caixas')
 plt.xlabel('Número de Caixas')
@@ -435,7 +447,7 @@ plt.plot(k_values, lista_passos_largura_count, marker='s', markersize=8, linesty
 plt.plot(k_values, lista_passos_profundidade_count, marker='o', markersize=6, linestyle='-', label='Busca em Profundidade Limitada')
 plt.plot(k_values, lista_passos_profundidade_iterativa_count, marker='o', markersize=6, linestyle='-', label='Busca em Profundidade Iterativa')
 plt.plot(k_values, lista_passos_a_estrela_count, marker='o', markersize=6, linestyle='-', label='Busca A*')
-plt.plot(k_values, lista_passos_profundidade_normal_count, marker='o', markersize=6, linestyle='-', label='Busca em Profundidade Normal')
+# plt.plot(k_values_profundidade_normal, lista_passos_profundidade_normal_count, marker='o', markersize=6, linestyle='-', label='Busca em Profundidade Normal')
 plt.title('Número de Passos/Estados x Número de Caixas')
 plt.xlabel('Número de Caixas')
 plt.ylabel('Número de Passos/Estados')
@@ -470,7 +482,6 @@ plt.show()
 # print(f'Nós totais A*: {total_a_estrela}, tempo total: {time_a_estrela},número de passos até solução: {len(estados_busca_estrela)}')
 # print(f'Nós totais Largura: {total_largura}, tempo total: {time_largura},número de passos até solução: {len(estados_largura)}')
 # print(f'Nós totais Profundidade Limitada*: {total_profundidade_limitada}, tempo total: {time_profundidade},número de passos até solução: {len(estados_profundidade_limitado)}')
-
 
 # Pilha Errada: Se uma caixa está na pilha errada, adicionamos uma penalidade de +1. Isso é o mínimo necessário para movê-la para a pilha correta.
 # Ordem Correta: Se a caixa está na pilha correta, verificamos se está fora de ordem (por exemplo, se uma caixa mais acima na pilha deveria estar abaixo dela). Se estiver fora de ordem, penalizamos com +1.
