@@ -340,6 +340,10 @@ lista_nodos_a_estrela = []
 lista_tempo_a_estrela = []
 lista_passos_a_estrela = []
 
+lista_nodos_profundidade_normal = []
+lista_tempo_profundidade_normal = []
+lista_passos_profundidade_normal = []
+
 k_min = 2
 k_max = 8
 
@@ -367,18 +371,26 @@ for n_caixas in range(k_min, k_max):
     lista_nodos_a_estrela.append(total_estados_a_estrela)
     lista_tempo_a_estrela.append(total_time_a_estrela)
     lista_passos_a_estrela.append(estados_a_estrela)
+
+    # Adicionar a busca em profundidade normal
+    total_estados_profundidade_normal, total_time_profundidade_normal, estados_profundidade_normal = chamar_busca_profundidade_normal()
+    lista_nodos_profundidade_normal.append(total_estados_profundidade_normal)
+    lista_tempo_profundidade_normal.append(total_time_profundidade_normal)
+    lista_passos_profundidade_normal.append(estados_profundidade_normal)
  
 k_values = list(range(k_min, k_max))
 lista_passos_largura_count = [len(steps) for steps in lista_passos_largura]
 lista_passos_profundidade_count = [len(steps) for steps in lista_passos_profundidade]
 lista_passos_profundidade_iterativa_count = [len(steps) for steps in lista_passos_profundidade_iterativa]
 lista_passos_a_estrela_count = [len(steps) for steps in lista_passos_a_estrela]
+lista_passos_profundidade_normal_count = [len(steps) for steps in lista_passos_profundidade_normal]
 
 plt.figure(figsize=(10, 6))
 plt.plot(k_values, lista_nodos_largura, marker='o', label='Busca em Largura')
 plt.plot(k_values, lista_nodos_profundidade, marker='o', label='Busca em Profundidade Limitada')
 plt.plot(k_values, lista_nodos_profundidade_iterativa, marker='o', label='Busca em Profundidade Iterativa')
 plt.plot(k_values, lista_nodos_a_estrela, marker='o', label='Busca A*')
+plt.plot(k_values, lista_nodos_profundidade_normal, marker='o', label='Busca em Profundidade Normal')
 plt.title('Número de Nós Visitados x Número de Caixas')
 plt.xlabel('Número de Caixas')
 plt.ylabel('Número de Nós Visitados')
@@ -390,6 +402,7 @@ plt.plot(k_values, lista_nodos_largura, marker='o', label='Busca em Largura')
 plt.plot(k_values, lista_nodos_profundidade, marker='o', label='Busca em Profundidade Limitada')
 plt.plot(k_values, lista_nodos_profundidade_iterativa, marker='o', label='Busca em Profundidade Iterativa')
 plt.plot(k_values, lista_nodos_a_estrela, marker='o', label='Busca A*')
+plt.plot(k_values, lista_nodos_profundidade_normal, marker='o', label='Busca em Profundidade Normal')
 plt.yscale('log')
 plt.title('Número de Nós Visitados x Número de Caixas')
 plt.xlabel('Número de Caixas')
@@ -402,12 +415,14 @@ lista_tempo_largura_filtrados = [tempo if tempo != 0 else None for k, tempo in z
 lista_tempo_profundidade_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_profundidade) if k >= 4]
 lista_tempo_profundidade_iterativa_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_profundidade_iterativa) if k >= 4]
 lista_tempo_a_estrela_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_a_estrela) if k >= 4]
+lista_tempo_profundidade_normal_filtrados = [tempo if tempo != 0 else None for k, tempo in zip(k_values, lista_tempo_profundidade_normal) if k >= 4]
 
 plt.figure(figsize=(10, 6))
 plt.plot(k_values_filtrados, lista_tempo_largura_filtrados, marker='o', label='Busca em Largura')
 plt.plot(k_values_filtrados, lista_tempo_profundidade_filtrados, marker='o', label='Busca em Profundidade Limitada')
 plt.plot(k_values_filtrados, lista_tempo_profundidade_iterativa_filtrados, marker='o', label='Busca em Profundidade Iterativa')
 plt.plot(k_values_filtrados, lista_tempo_a_estrela_filtrados, marker='o', label='Busca A*')
+plt.plot(k_values_filtrados, lista_tempo_profundidade_normal_filtrados, marker='o', label='Busca em Profundidade Normal')
 plt.yscale('log')
 plt.title('Tempo Total x Número de Caixas')
 plt.xlabel('Número de Caixas')
@@ -420,29 +435,31 @@ plt.plot(k_values, lista_passos_largura_count, marker='s', markersize=8, linesty
 plt.plot(k_values, lista_passos_profundidade_count, marker='o', markersize=6, linestyle='-', label='Busca em Profundidade Limitada')
 plt.plot(k_values, lista_passos_profundidade_iterativa_count, marker='o', markersize=6, linestyle='-', label='Busca em Profundidade Iterativa')
 plt.plot(k_values, lista_passos_a_estrela_count, marker='o', markersize=6, linestyle='-', label='Busca A*')
+plt.plot(k_values, lista_passos_profundidade_normal_count, marker='o', markersize=6, linestyle='-', label='Busca em Profundidade Normal')
 plt.title('Número de Passos/Estados x Número de Caixas')
 plt.xlabel('Número de Caixas')
 plt.ylabel('Número de Passos/Estados')
 plt.legend()
 plt.show()
 
-pilhas_inicial = [['c', 'b', 'a'], ['e', 'd'], ['g', 'f']]
-pilhas_final = [[], ['f', 'g', 'd', 'b'], ['c', 'a', 'e']]
 
-pilhas_inicial, pilhas_final = criar_casos_aleatorios(8)
-estoque = Estoque(pilhas_inicial, pilhas_final)
+# pilhas_inicial = [['c', 'b', 'a'], ['e', 'd'], ['g', 'f']]
+# pilhas_final = [[], ['f', 'g', 'd', 'b'], ['c', 'a', 'e']]
+
+# pilhas_inicial, pilhas_final = criar_casos_aleatorios(8)
+# estoque = Estoque(pilhas_inicial, pilhas_final)
 
 
-def plot_estados_visitados(nos_a_estrela, nos_largura, nos_profundidade_limitada):
+# def plot_estados_visitados(nos_a_estrela, nos_largura, nos_profundidade_limitada):
 
-    algoritmos = ['Busca A*', 'Busca em Largura', 'Busca em Profundidade Limitada']
-    visitados = [nos_a_estrela, nos_largura, nos_profundidade_limitada]
-    plt.figure(figsize=(10, 6))
-    plt.bar(algoritmos, visitados, color=['blue', 'green', 'orange'])
-    plt.title("Número Total de Estados Visitados por Algoritmo")
-    plt.xlabel("Algoritmo")
-    plt.ylabel("Número Total de Estados Visitados")
-    plt.show()
+#     algoritmos = ['Busca A*', 'Busca em Largura', 'Busca em Profundidade Limitada']
+#     visitados = [nos_a_estrela, nos_largura, nos_profundidade_limitada]
+#     plt.figure(figsize=(10, 6))
+#     plt.bar(algoritmos, visitados, color=['blue', 'green', 'orange'])
+#     plt.title("Número Total de Estados Visitados por Algoritmo")
+#     plt.xlabel("Algoritmo")
+#     plt.ylabel("Número Total de Estados Visitados")
+#     plt.show()
 
 # total_largura, time_largura, estados_largura = chamar_busca_largura()
 # total_profundidade_limitada, time_profundidade, estados_profundidade_limitado = chamar_busca_profundidade_limitada()
