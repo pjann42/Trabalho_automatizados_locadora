@@ -351,7 +351,7 @@ lista_tempo_profundidade_normal = []
 lista_passos_profundidade_normal = []
 
 k_min = 2
-k_max = 9
+k_max = 8
 
 for n_caixas in range(k_min, k_max):
     pilhas_inicial, pilhas_final = criar_casos_aleatorios(n_caixas)
