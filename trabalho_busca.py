@@ -1,5 +1,4 @@
 # Trabalho Busca
-
 # Partes comentadas do código foram utilizadas para observar o comportamento do sistema e debugar
 
 from collections import deque
@@ -490,7 +489,7 @@ def teste_plot(largura,profundidade_limitada,profundidade_iterativa,a_estrela,pr
     plt.show()
 
 
-teste_plot(largura= False,profundidade_limitada=False,profundidade_iterativa=True,a_estrela=True,profundidade=False,min_caixas=2,max_caixas=8)
+teste_plot(largura= True,profundidade_limitada=True,profundidade_iterativa=True,a_estrela=True,profundidade=True,min_caixas=2,max_caixas=5)
 
 # pilhas_inicial = [['c', 'b', 'a'], ['e', 'd'], ['g', 'f']]
 # pilhas_final = [[], ['f', 'g', 'd', 'b'], ['c', 'a', 'e']]
