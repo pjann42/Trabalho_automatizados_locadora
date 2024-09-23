@@ -488,7 +488,6 @@ def teste_plot(largura,profundidade_limitada,profundidade_iterativa,a_estrela,pr
     plt.legend()
     plt.show()
 
-
 teste_plot(largura= True,profundidade_limitada=True,profundidade_iterativa=True,a_estrela=True,profundidade=True,min_caixas=2,max_caixas=5)
 
 # pilhas_inicial = [['c', 'b', 'a'], ['e', 'd'], ['g', 'f']]
